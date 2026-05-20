@@ -1,0 +1,30 @@
+# Environment and secrets
+.env
+client_secrets.json
+token.json
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+
+# Generated media
+temp_videos/
+*.mp3
+*.mp4
+!frontend/icons/*.png
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Node (if added later)
+node_modules/

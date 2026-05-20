@@ -1,0 +1,32 @@
+---
+description: Backlog of optional polish to implement later for Social Media AI Agent
+alwaysApply: true
+---
+
+# Optional Polish Backlog (implement later)
+
+Do not implement unless the user asks. Track as future work:
+
+## Deployment & ops
+- Git commit and push to GitHub
+- Railway deploy + env vars in dashboard
+- Vercel deploy + `BACKEND_URL` / meta tag injection
+- Railway cron or external ping on `/ping` to reduce free-tier sleep
+
+## Research & agent
+- Migrate DuckDuckGo to `ddgs` package if `duckduckgo-search` keeps returning empty
+- ~~LangChain agent~~ (removed; uses `run_pipeline()` + official Gemini/Groq SDKs in writer)
+- Add `scripts/test_video.py`, `test_youtube.py`, `test_tiktok.py` and run full E2E
+
+## Platforms
+- TikTok OAuth web flow (not only env token)
+- End-to-end faceless: research → video → YouTube upload
+- End-to-end upload mode with user video
+
+## PWA & assets
+- Replace placeholder PWA icons with branded 192/512 assets
+- Test install + offline on real iPhone 14 and Android
+- Rotate API keys if ever exposed in logs or chat
+
+## Security
+- Never commit `.env`, `client_secrets.json`, or `token.json`

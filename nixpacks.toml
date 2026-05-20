@@ -1,0 +1,3 @@
+# Railway/Nixpacks: install ffmpeg for MoviePy
+[phases.setup]
+aptPkgs = ["ffmpeg"]
