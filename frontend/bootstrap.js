@@ -11,7 +11,7 @@
     if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
       return "http://localhost:8000";
     }
-    return localStorage.getItem("backend_url")?.replace(/\/$/, "") || "";
+    return localStorage.getItem("backend_url")?.replace(/\/$/, "") || "https://social-media-agent-production-b566.up.railway.app";
   }
 
   async function check() {
