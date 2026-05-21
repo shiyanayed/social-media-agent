@@ -17,7 +17,7 @@
     if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
       return "http://localhost:8000";
     }
-    return prompt("Enter your Railway backend URL:", "https://your-app.up.railway.app") || "";
+    return "https://social-media-agent-production-b566.up.railway.app";
   }
 
   let BACKEND = getBackendUrl();
