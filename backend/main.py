@@ -30,16 +30,18 @@ app = FastAPI(
 )
 
 # CORS for PWA (Vercel + local dev)
+# Allow the exact FRONTEND_URL (Vercel preview or production) and any subdomains of .vercel.app.
+# Also keep localhost origins for local development.
 _origins = [
     FRONTEND_URL,
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:5173",
-    "https://*.vercel.app",
 ]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # PWA may be on any Vercel preview URL
+    allow_origins=_origins,
+    allow_origin_regex=r"https?://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

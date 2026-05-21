@@ -126,6 +126,7 @@ def create_auth_url(state: str = "default") -> dict:
             access_type='offline',
             include_granted_scopes='true',
             prompt='consent',
+            state=fresh_state,
         )
         _store_verifier(fresh_state, verifier)
         return {'status': 'ok', 'auth_url': auth_url, 'state': fresh_state}
