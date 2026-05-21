@@ -1,10 +1,11 @@
 """
 YouTube OAuth 2.0 web application flow.
-Tokens are stored server-side only (token.json) — never sent to the PWA.
+Tokens are stored server-side only (token.json) - never sent to the PWA.
 """
 
 import json
 import logging
+import os
 from typing import Optional
 
 from google.auth.transport.requests import Request
@@ -22,25 +23,19 @@ from backend.config import (
 
 logger = logging.getLogger(__name__)
 
-# In-memory OAuth state (use Redis in multi-instance production)
 _pending_flows: dict[str, Flow] = {}
 
 
 def _redirect_uri() -> str:
-    """OAuth redirect must match Google Cloud Console."""
     base = RAILWAY_BACKEND_URL.rstrip("/")
     return f"{base}/auth/callback"
 
 
 def get_credentials() -> Optional[Credentials]:
-    """
-    Load saved credentials; refresh if expired.
-    Returns None if user has not completed OAuth yet.
-    """
     if not TOKEN_PATH.is_file():
         return None
     try:
-        creds = Credentials.from_authorized_user_file(str(TOKEN_PATH), YOUTUBE_SCOPES)
+        creds = Credentials.from_authorized_user_file(str(TOKEN_PATH))
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
             save_credentials(creds)
@@ -51,7 +46,6 @@ def get_credentials() -> Optional[Credentials]:
 
 
 def save_credentials(creds: Credentials) -> None:
-    """Persist OAuth token to disk."""
     try:
         TOKEN_PATH.write_text(creds.to_json(), encoding="utf-8")
     except Exception as e:
@@ -60,26 +54,22 @@ def save_credentials(creds: Credentials) -> None:
 
 
 def is_youtube_authenticated() -> bool:
-    """Check if we have a valid YouTube token."""
     return get_credentials() is not None
 
 
 def create_auth_url(state: str = "default") -> dict:
-    """
-    Start OAuth flow; return URL to redirect the user to Google.
-    """
     if not youtube_configured():
         return {
             "status": "error",
-            "message": "YouTube client secrets not found. Add client_secrets.json to project root.",
+            "message": "YouTube client secrets not found. Add client_secrets.json to project root."
         }
     try:
+        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
         flow = Flow.from_client_secrets_file(
             str(YOUTUBE_CLIENT_SECRETS_PATH),
             scopes=YOUTUBE_SCOPES,
             redirect_uri=_redirect_uri(),
         )
-        flow.code_verifier = None
         auth_url, _ = flow.authorization_url(
             access_type="offline",
             include_granted_scopes="true",
@@ -93,29 +83,21 @@ def create_auth_url(state: str = "default") -> dict:
 
 
 def handle_callback(code: str, state: str = "default") -> dict:
-    """
-    Exchange authorization code for tokens after Google redirect.
-    """
-    flow = _pending_flows.pop(state, None)
-    if flow is None:
-        try:
+    try:
+        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+        flow = _pending_flows.pop(state, None)
+        if flow is None:
             flow = Flow.from_client_secrets_file(
                 str(YOUTUBE_CLIENT_SECRETS_PATH),
                 scopes=YOUTUBE_SCOPES,
                 redirect_uri=_redirect_uri(),
             )
-            flow.code_verifier = None
-            flow.redirect_uri = _redirect_uri()
-        except Exception as e:
-            return {"status": "error", "message": f"OAuth flow not found: {e}"}
-
-    try:
         flow.fetch_token(code=code)
         creds = flow.credentials
         save_credentials(creds)
         return {
             "status": "ok",
-            "message": "YouTube connected successfully",
+            "message": "YouTube connected successfully!",
             "redirect": FRONTEND_URL,
         }
     except Exception as e:
@@ -124,10 +106,10 @@ def handle_callback(code: str, state: str = "default") -> dict:
 
 
 def revoke_and_clear() -> dict:
-    """Remove stored token (disconnect YouTube)."""
     try:
         if TOKEN_PATH.is_file():
             TOKEN_PATH.unlink()
         return {"status": "ok", "message": "YouTube disconnected"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
