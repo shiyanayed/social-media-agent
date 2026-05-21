@@ -6,6 +6,8 @@ Tokens are stored server-side only (token.json) - never sent to the PWA.
 import json
 import logging
 import os
+import random
+import string
 from typing import Optional
 
 from google.auth.transport.requests import Request
@@ -23,12 +25,18 @@ from backend.config import (
 
 logger = logging.getLogger(__name__)
 
-_pending_flows: dict[str, Flow] = {}
+# Store both flow and code_verifier together
+_pending_flows: dict[str, dict] = {}
 
 
 def _redirect_uri() -> str:
     base = RAILWAY_BACKEND_URL.rstrip("/")
     return f"{base}/auth/callback"
+
+
+def _make_code_verifier() -> str:
+    chars = string.ascii_letters + string.digits
+    return "".join(random.choice(chars) for _ in range(64))
 
 
 def get_credentials() -> Optional[Credentials]:
@@ -61,21 +69,25 @@ def create_auth_url(state: str = "default") -> dict:
     if not youtube_configured():
         return {
             "status": "error",
-            "message": "YouTube client secrets not found. Add client_secrets.json to project root."
+            "message": "YouTube client secrets not found."
         }
     try:
-        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+        code_verifier = _make_code_verifier()
         flow = Flow.from_client_secrets_file(
             str(YOUTUBE_CLIENT_SECRETS_PATH),
             scopes=YOUTUBE_SCOPES,
             redirect_uri=_redirect_uri(),
         )
+        flow.code_verifier = code_verifier
         auth_url, _ = flow.authorization_url(
             access_type="offline",
             include_granted_scopes="true",
             prompt="consent",
         )
-        _pending_flows[state] = flow
+        _pending_flows[state] = {
+            "flow": flow,
+            "code_verifier": code_verifier
+        }
         return {"status": "ok", "auth_url": auth_url}
     except Exception as e:
         logger.error("OAuth start failed: %s", e)
@@ -84,14 +96,19 @@ def create_auth_url(state: str = "default") -> dict:
 
 def handle_callback(code: str, state: str = "default") -> dict:
     try:
-        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-        flow = _pending_flows.pop(state, None)
-        if flow is None:
+        pending = _pending_flows.pop(state, None)
+        if pending:
+            flow = pending["flow"]
+            code_verifier = pending["code_verifier"]
+        else:
+            code_verifier = None
             flow = Flow.from_client_secrets_file(
                 str(YOUTUBE_CLIENT_SECRETS_PATH),
                 scopes=YOUTUBE_SCOPES,
                 redirect_uri=_redirect_uri(),
             )
+        flow.code_verifier = code_verifier
+        flow.redirect_uri = _redirect_uri()
         flow.fetch_token(code=code)
         creds = flow.credentials
         save_credentials(creds)
@@ -112,4 +129,3 @@ def revoke_and_clear() -> dict:
         return {"status": "ok", "message": "YouTube disconnected"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
