@@ -79,6 +79,7 @@ def create_auth_url(state: str = "default") -> dict:
             scopes=YOUTUBE_SCOPES,
             redirect_uri=_redirect_uri(),
         )
+        flow.code_verifier = none
         auth_url, _ = flow.authorization_url(
             access_type="offline",
             include_granted_scopes="true",
@@ -103,6 +104,7 @@ def handle_callback(code: str, state: str = "default") -> dict:
                 scopes=YOUTUBE_SCOPES,
                 redirect_uri=_redirect_uri(),
             )
+            flow.code_verifier = none
             flow.redirect_uri = _redirect_uri()
         except Exception as e:
             return {"status": "error", "message": f"OAuth flow not found: {e}"}
