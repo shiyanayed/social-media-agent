@@ -35,9 +35,13 @@ if YOUTUBE_CLIENT_SECRETS_JSON and not _secrets_path.is_file():
         pass
 YOUTUBE_CLIENT_SECRETS_PATH: Path = _secrets_path
 TOKEN_PATH: Path = _ROOT / "token.json"
+# Updated list of scopes includes OpenID and userinfo scopes required by Google
 YOUTUBE_SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
 ]
 
 # --- TikTok ---

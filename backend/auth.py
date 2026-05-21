@@ -111,6 +111,14 @@ def create_auth_url(state: str = "default") -> dict:
     if not youtube_configured():
         return {"status": "error", "message": "YouTube client secrets not found."}
     try:
+        # If a token file exists from a previous login with different scopes, remove it to refresh scopes.
+        if TOKEN_PATH.is_file():
+            try:
+                TOKEN_PATH.unlink()
+                logger.info("Removed existing token.json to refresh scopes.")
+            except Exception as e:
+                logger.warning("Failed to remove token.json: %s", e)
+        # Generate a fresh OAuth state with a new PKCE verifier
         fresh_state = _make_state()
         payload = _extract_state(fresh_state)
         if not payload:
