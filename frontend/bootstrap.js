@@ -8,10 +8,7 @@
     const meta = document.querySelector('meta[name="backend-url"]');
     if (meta?.content) return meta.content.replace(/\/$/, "");
     if (window.__BACKEND_URL__) return window.__BACKEND_URL__.replace(/\/$/, "");
-    if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-      return "http://localhost:8000";
-    }
-    return localStorage.getItem("backend_url")?.replace(/\/$/, "") || "https://social-media-agent-production-b566.up.railway.app";
+    return "https://social-media-agent-production-b566.up.railway.app";
   }
 
   async function check() {
@@ -24,8 +21,7 @@
       document.addEventListener("DOMContentLoaded", () => {
         const el = document.getElementById("offline-banner");
         if (!el) return;
-        el.textContent =
-          "Backend offline — run: python -m uvicorn backend.main:app --reload --port 8000";
+        el.textContent = "Backend connecting... please wait.";
         el.classList.add("visible");
         el.style.background = "linear-gradient(90deg, #f87171, #ef4444)";
         el.style.color = "#fff";
