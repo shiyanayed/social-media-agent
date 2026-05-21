@@ -16,7 +16,7 @@ from google_auth_oauthlib.flow import Flow
 
 from backend.config import (
     FRONTEND_URL,
-    RAILWAY_BACKEND_URL,
+    BACKEND_URL,
     TOKEN_PATH,
     YOUTUBE_CLIENT_SECRETS_PATH,
     YOUTUBE_SCOPES,
@@ -40,7 +40,7 @@ else:
 
 def _redirect_uri() -> str:
     """Return the absolute OAuth callback URL for this deployment."""
-    base = RAILWAY_BACKEND_URL.rstrip("/")
+    base = BACKEND_URL.rstrip("/")
     return f"{base}/auth/callback"
 
 def _make_code_verifier() -> str:

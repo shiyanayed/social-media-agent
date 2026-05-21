@@ -50,7 +50,7 @@ TIKTOK_CLIENT_SECRET: str = os.getenv("TIKTOK_CLIENT_SECRET", "")
 TIKTOK_ACCESS_TOKEN: str = os.getenv("TIKTOK_ACCESS_TOKEN", "")
 
 # --- Deployment ---
-RAILWAY_BACKEND_URL: str = os.getenv("RAILWAY_BACKEND_URL", "http://localhost:8000")
+BACKEND_URL: str = os.getenv("RENDER_BACKEND_URL", os.getenv("RAILWAY_BACKEND_URL", "http://localhost:8000"))
 FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
 PORT: int = int(os.getenv("PORT", "8000"))
 

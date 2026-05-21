@@ -5,7 +5,7 @@ import sys
 import urllib.error
 import urllib.request
 
-BASE = os.getenv("RAILWAY_BACKEND_URL", "http://localhost:8000").rstrip("/")
+BASE = os.getenv("RENDER_BACKEND_URL", os.getenv("RAILWAY_BACKEND_URL", "http://localhost:8000")).rstrip("/")
 
 
 def get(path: str):
